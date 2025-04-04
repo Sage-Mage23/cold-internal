@@ -407,16 +407,16 @@ void RenderingMain(UGameViewportClient* Viewport, UCanvas* Canvas)
 														{
 															FVector Velocity = Target->GetVelocity();
 															double ProjectileGravity = CurrentWeapon->GetProjectileGravity();
-															FVector startlocation = CurrentWeapon->GetTargetingSourceLocation();
-															double distance = StaticClasses::KismetMathLibrary->Vector_Distance(AimbotPosition, startlocation);
+															FVector StartLocation = CurrentWeapon->GetTargetingSourceLocation();
+															double Distance = StaticClasses::KismetMathLibrary->Vector_Distance(AimbotPosition, StartLocation);
 
-															double TimeToTarget = distance / CurrentWeapon->GetProjectileSpeed();
+															double TimeToTarget = Distance / CurrentWeapon->GetProjectileSpeed();
 
 															AimbotPosition.X += Velocity.X * TimeToTarget;
 															AimbotPosition.Y += Velocity.Y * TimeToTarget;
 
-															double Difference = startlocation.Z - AimbotPosition.Z;
-															double HorizontalDistance = StaticClasses::KismetMathLibrary->sqrt(StaticClasses::KismetMathLibrary->Pow(startlocation.X - AimbotPosition.X, 2.0) + StaticClasses::KismetMathLibrary->Pow(startlocation.Y - AimbotPosition.Y, 2.0));
+															double Difference = StartLocation.Z - AimbotPosition.Z;
+															double HorizontalDistance = StaticClasses::KismetMathLibrary->sqrt(StaticClasses::KismetMathLibrary->Pow(StartLocation.X - AimbotPosition.X, 2.0) + StaticClasses::KismetMathLibrary->Pow(StartLocation.Y - AimbotPosition.Y, 2.0));
 															double VerticalAngle = StaticClasses::KismetMathLibrary->Atan2(StaticClasses::KismetMathLibrary->abs(Difference), HorizontalDistance);
 
 															double Angle = VerticalAngle * (180.0 / M_PI);
