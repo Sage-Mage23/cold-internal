@@ -51,7 +51,7 @@ void RenderingMain(UGameViewportClient* Viewport, UCanvas* Canvas)
 	APlayerCameraManager* PlayerCameraManager = PlayerController->PlayerCameraManager();
 	if (!PlayerCameraManager) return OriginalTransition(Viewport, Canvas);
 	
-	if (GetAsyncKeyState(VK_INSERT)) Render::ShowMenu = !Render::ShowMenu;
+	if (GetAsyncKeyState(VK_INSERT) & 1) Render::ShowMenu = !Render::ShowMenu;
 	Menu::Render(Canvas);
 
 	APlayerPawn_Athena_C* AcknowledgedPawn = PlayerController->AcknowledgedPawn();
