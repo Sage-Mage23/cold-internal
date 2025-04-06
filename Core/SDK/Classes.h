@@ -975,8 +975,9 @@ class AFortPlayerState : public AFortPlayerStateAthena
 public:
 	UFortPlayerStateComponent_Habanero* HabaneroComponent()
 	{
-		return *(UFortPlayerStateComponent_Habanero**)(this + Offsets::HabaneroComponent);
+		return *(UFortPlayerStateComponent_Habanero**)(this + 0xa48);
 	}
+
 
 	FString GetRankStr() {
 		FString rankStr = L"Unranked";

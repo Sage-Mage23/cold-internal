@@ -48,8 +48,10 @@ void RenderingMain(UGameViewportClient* Viewport, UCanvas* Canvas)
 
 	APlayerCameraManager* PlayerCameraManager = PlayerController->PlayerCameraManager();
 	if (!PlayerCameraManager) return OriginalTransition(Viewport, Canvas);
-	
-	if (GetAsyncKeyState(VK_INSERT) & 1) Render::ShowMenu = !Render::ShowMenu;
+
+	FKey MenuKey = SDK::F8;
+	bool MenuKeyDown = PlayerController->WasInputKeyJustPressed(MenuKey);
+	if (MenuKeyDown) Render::ShowMenu = !Render::ShowMenu;
 	Menu::Render(Canvas);
 
 	APlayerPawn_Athena_C* AcknowledgedPawn = PlayerController->AcknowledgedPawn();
@@ -156,7 +158,7 @@ void RenderingMain(UGameViewportClient* Viewport, UCanvas* Canvas)
 			}
 		}
 
-		if (!Custom::InScreen(HeadScreen)) continue;
+		//if (!Custom::InScreen(HeadScreen)) continue;
 		
 		if (Settings::Visuals::Enable)
 		{
@@ -250,6 +252,49 @@ void RenderingMain(UGameViewportClient* Viewport, UCanvas* Canvas)
 
 				Canvas->K2_DrawLine(FVector2D(MostLeft + ActorWidth - (CornerWidth + BoxSize), MostTop + ActorHeight), FVector2D(MostLeft + ActorWidth, MostTop + ActorHeight), 1.5f, Color);
 				Canvas->K2_DrawLine(FVector2D(MostLeft + ActorWidth, MostTop + ActorHeight - (CornerHeight * BoxSize)), FVector2D(MostLeft + ActorWidth, MostTop + ActorHeight), 1.5f, Color);
+
+				if (Settings::Visuals::filled_box)
+				{
+					UTexture2D* DefaultTexture = Canvas->DefaultTexture();
+					Canvas->K2_DrawTexture(DefaultTexture, FVector2D(MostLeft, MostTop), FVector2D(ActorWidth, ActorHeight), FVector2D(), FVector2D(1.0, 1.0), FLinearColor(0.0f, 0.0f, 0.0f, 0.20f), EBlendMode::BLEND_Translucent, 0.f, FVector2D());
+				}
+			}
+
+			if (Settings::Visuals::oof)
+			{
+				if (!Custom::InScreen(HeadScreen))
+				{
+					double Angle = StaticClasses::KismetMathLibrary->Atan2(HeadScreen.Y - SDK::Classes::ScreenCenter.Y, HeadScreen.X - SDK::Classes::ScreenCenter.X);
+
+					FVector2D ArrowPosition = { SDK::Classes::ScreenCenter.X + (AimbotFOV + 10.0) * StaticClasses::KismetMathLibrary->cos(Angle),
+					SDK::Classes::ScreenCenter.Y + (AimbotFOV + 10.0) * StaticClasses::KismetMathLibrary->sin(Angle) };
+
+					double RotationAngle = Angle - WorldDeltaSeconds;
+
+					FVector2D Vertex[3] =
+					{
+						FVector2D(ArrowPosition.X + StaticClasses::KismetMathLibrary->cos(RotationAngle) * 10.0, ArrowPosition.Y + StaticClasses::KismetMathLibrary->sin(RotationAngle) * 10.0),
+						FVector2D(ArrowPosition.X + StaticClasses::KismetMathLibrary->cos(RotationAngle - 1.5) * 8.0, ArrowPosition.Y + StaticClasses::KismetMathLibrary->sin(RotationAngle - 1.5) * 8.0),
+						FVector2D(ArrowPosition.X + StaticClasses::KismetMathLibrary->cos(RotationAngle + 1.5) * 8.0, ArrowPosition.Y + StaticClasses::KismetMathLibrary->sin(RotationAngle + 1.5) * 8.0)
+					};
+
+					Custom::Triangle(Vertex[0], Vertex[1], Vertex[2], Color, 1.f, true);
+				}
+			}
+
+			if (Settings::Visuals::view_line)
+			{
+				auto root_component = Player->RootComponent();
+				if (root_component) {
+					auto direction = root_component->GetForwardVector();
+
+					auto view_distance = static_cast<double>(Settings::Visuals::view_line);
+					auto view_location = Head + (direction * view_distance);
+
+					FVector2D view_position;
+
+					Canvas->K2_DrawLine(HeadScreen, view_position, 1.5f, FLinearColor(1.f, 0.f, 0.f, 1.f));
+				}
 			}
 
 			if (Settings::Visuals::Skeleton)
@@ -287,15 +332,6 @@ void RenderingMain(UGameViewportClient* Viewport, UCanvas* Canvas)
 
 				Canvas->K2_DrawText(Platform, FVector2D(BottomMiddle.X, MostTop - TopTextOffset), Settings::Visuals::FontSize, RenderColor, true, false, Settings::Visuals::TextOutline);
 				TopTextOffset += FontSize + 2;
-			}
-
-			if (Settings::Visuals::Rank)
-			{
-				if (PlayerState->HabaneroComponent())
-				{
-					Canvas->K2_DrawText(PlayerState->GetRankStr(), FVector2D(BottomMiddle.X, MostBottom + BottomTextOffset), Settings::Visuals::FontSize, Color, true, false, Settings::Visuals::TextOutline);
-					BottomTextOffset += FontSize + 2;
-				}
 			}
 
 			if (Settings::Visuals::Weapon)
@@ -416,6 +452,19 @@ void RenderingMain(UGameViewportClient* Viewport, UCanvas* Canvas)
 											}
 										}
 
+										if (Settings::Combat::Triggerbot)
+										{
+											bool IsHoldingShotgun = CurrentWeapon->WeaponCoreAnimation() == EFortWeaponCoreAnimation::Shotgun;
+											if (PlayerController->WasInputKeyJustPressed(SDK::LeftShift))
+											{
+												if (CurrentWeapon->CanFire() && IsHoldingShotgun)
+												{
+													AcknowledgedPawn->PawnStartFire();
+													AcknowledgedPawn->PawnStopFire();
+												}
+											}
+										}
+
 										if (Settings::Combat::Prediction)
 										{
 											AFortWeapon* CurrentWeapon = AcknowledgedPawn->CurrentWeapon();
@@ -457,7 +506,27 @@ void RenderingMain(UGameViewportClient* Viewport, UCanvas* Canvas)
 													}
 												}
 											}
+
+											if (Settings::Combat::PredDot)
+											{
+												FVector2D PredictionLocation = FVector2D();
+												if (Custom::K2_Project(AimbotPosition, &PredictionLocation))
+												{
+													double CircleRaduis = SDK::Classes::ScreenSize.Y / (2.0 * PlayerDistance * StaticClasses::KismetMathLibrary->tan(FieldOfView * M_PI / 360.0)) * 8.0;
+													Canvas->DrawCircle(PredictionLocation, PredictionLocation, 138.0, FLinearColor(1.f, 0.f, 0.f, 1.f));
+												}
+											}
 										}
+
+										FKey AimbotKey = SDK::RightMouseButton;
+										if (Settings::Combat::Bind == 1)
+											AimbotKey = SDK::LeftMouseButton;
+										else if (Settings::Combat::Bind == 2)
+											AimbotKey = SDK::LeftShift;
+										else if (Settings::Combat::Bind == 3)
+											AimbotKey = SDK::ThumbMouseButton;
+										else if (Settings::Combat::Bind == 4)
+											AimbotKey = SDK::ThumbMouseButton2;
 
 										if (Settings::Combat::Enable && AcknowledgedPawn)
 										{
@@ -482,7 +551,9 @@ void RenderingMain(UGameViewportClient* Viewport, UCanvas* Canvas)
 
 														if (PlayerController)
 														{
-															if (GetAsyncKeyState(Settings::Combat::Keybind))
+															bool AimbotKeyDown = PlayerController->IsInputKeyDown(AimbotKey);
+															//if (GetAsyncKeyState(Settings::Combat::Keybind))
+															if (AimbotKeyDown)
 															{
 																TargetRotation.Pitch = TargetRotation.Pitch - SDK::Classes::CameraRotation.Pitch;
 																TargetRotation.Yaw = TargetRotation.Yaw - SDK::Classes::CameraRotation.Yaw;
@@ -607,8 +678,15 @@ void InitClasses()
 	BaseWeaponStats.clear();
 	DynamicMaterialInstance.clear();
 
-	SDK::Keys::LeftShift = FKey{ FName{StaticClasses::KismetStringLibrary->Conv_StringToName(L"LeftShift") } };
-	SDK::Keys::Insert = FKey{ FName{StaticClasses::KismetStringLibrary->Conv_StringToName(L"Insert") } };
+	SDK::LeftShift = FKey{ FName{ StaticClasses::KismetStringLibrary->Conv_StringToName(L"LeftShift") }, 0 };
+	SDK::F8 = FKey{ FName{ StaticClasses::KismetStringLibrary->Conv_StringToName(L"F8") }, 0 };
+	SDK::RightMouseButton = FKey{ FName{ StaticClasses::KismetStringLibrary->Conv_StringToName(L"RightMouseButton") }, 0 };
+	SDK::LeftMouseButton = FKey{ FName{ StaticClasses::KismetStringLibrary->Conv_StringToName(L"LeftMouseButton") }, 0 };
+	SDK::ThumbMouseButton = FKey{ FName{ StaticClasses::KismetStringLibrary->Conv_StringToName(L"ThumbMouseButton") }, 0 };
+	SDK::ThumbMouseButton2 = FKey{ FName{ StaticClasses::KismetStringLibrary->Conv_StringToName(L"ThumbMouseButton2") }, 0 };
+	SDK::Insert = FKey{ FName{ StaticClasses::KismetStringLibrary->Conv_StringToName(L"Insert") }, 0 };
+	SDK::LeftAlt = FKey{ FName{ StaticClasses::KismetStringLibrary->Conv_StringToName(L"LeftAlt") }, 0 };
+
 
 	auto Roboto = Encrypt(L"BurbankSmall.BurbankSmall");
 	SDK::Classes::Burbank = UObject::FindObjectSingle<UFont*>(Roboto.decrypt(), reinterpret_cast<UObject*>(-1));

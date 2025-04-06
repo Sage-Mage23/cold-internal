@@ -39,8 +39,6 @@ namespace SDK
 		UFont* Burbank = nullptr;
 		UFont* MediumFont = nullptr;
 
-		static inline FKey LeftShift = FKey();
-
 		static FVector2D ScreenCenter = FVector2D();
 		static FVector2D ScreenSize = FVector2D();
 		static FVector2D ScreenTopLeft = FVector2D();
@@ -81,66 +79,15 @@ namespace SDK
 		}
 	}
 
+	FKey Insert = FKey();
+	FKey LeftMouseButton = FKey();
+	FKey RightMouseButton = FKey();
+	FKey ThumbMouseButton = FKey();
+	FKey ThumbMouseButton2 = FKey();
+	FKey F8 = FKey();
+	FKey LeftShift = FKey();
+	FKey LeftAlt = FKey();
 
-	namespace Keys
-	{
-		FKey LeftMouseButton;
-		FKey RightMouseButton;
-		FKey GamepadLeftTrigger;
-		FKey Insert;
-		FKey F8;
-		FKey F7;
-		FKey W;
-		FKey A;
-		FKey S;
-		FKey D;
-		FKey X;
-		FKey Right;
-		FKey SpaceBar;
-		FKey LeftShift;
-		FKey LeftAlt;
-		FKey Capslock;
-		FKey Home;
-		FKey Tab;
-
-		namespace Other
-		{
-			FKey B;
-			FKey C;
-			FKey E;
-			FKey F;
-			FKey G;
-			FKey H;
-			FKey I;
-			FKey J;
-			FKey K;
-			FKey L;
-			FKey M;
-			FKey N;
-			FKey O;
-			FKey P;
-			FKey Q;
-			FKey R;
-			FKey T;
-			FKey U;
-			FKey V;
-			FKey Y;
-			FKey Z;
-
-			// mouse
-
-			FKey ThumbMouseButton;
-			FKey ThumbMouseButton2;
-			FKey MiddleMouseButton;
-			FKey Gamepad_LeftTrigger;
-			FKey Gamepad_FaceButton_Right;
-			// misc
-
-			FKey Underscore;
-			FKey Period;
-			FKey Slash;
-		}
-	}
 }
 
 #include "../Core/Render/settings.h"

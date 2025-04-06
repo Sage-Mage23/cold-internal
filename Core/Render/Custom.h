@@ -192,4 +192,55 @@ namespace Custom
 			return FString(L"None");
 		}
 	}
+
+	FLinearColor GetColorByRank(int32_t Rank)
+	{
+		switch (Rank)
+		{
+		case 0:
+		case 1:
+		case 2:
+			return FLinearColor(0.902f, 0.580f, 0.227f, 1.0f);
+		case 3:
+		case 4:
+		case 5:
+			return FLinearColor(0.843f, 0.843f, 0.843f, 1.0f);
+		case 6:
+		case 7:
+		case 8:
+			return FLinearColor(1.0f, 0.871f, 0.0f, 1.0f);
+		case 9:
+		case 10:
+		case 11:
+			return FLinearColor(0.0f, 0.7f, 0.7f, 1.0f);
+		case 12:
+		case 13:
+		case 14:
+			return FLinearColor(0.0f, 0.0f, 0.7f, 1.0f);
+		case 15:
+			return FLinearColor(0.7f, 0.7f, 0.7f, 1.0f);
+		case 16:
+			return FLinearColor(1.0f, 0.6f, 0.0f, 1.0f);
+		case 17:
+			return FLinearColor(0.6f, 0.0f, 0.6f, 1.0f);
+		default:
+			return FLinearColor(0.0f, 0.7859f, 1.0f, 1.0f);
+		}
+	}
+
+	void Triangle(FVector2D ScreenPositionA, FVector2D ScreenPositionB, FVector2D ScreenPositionC, FLinearColor RenderColor, float Thickness, bool Filled)
+	{
+		if (Filled)
+		{
+			SDK::Classes::Canvas->K2_DrawLine(ScreenPositionA, ScreenPositionB, Thickness, RenderColor);
+			SDK::Classes::Canvas->K2_DrawLine(ScreenPositionB, ScreenPositionC, Thickness, RenderColor);
+			SDK::Classes::Canvas->K2_DrawLine(ScreenPositionC, ScreenPositionA, Thickness, RenderColor);
+		}
+		else
+		{
+			SDK::Classes::Canvas->K2_DrawLine(ScreenPositionA, ScreenPositionB, Thickness, RenderColor);
+			SDK::Classes::Canvas->K2_DrawLine(ScreenPositionB, ScreenPositionC, Thickness, RenderColor);
+			SDK::Classes::Canvas->K2_DrawLine(ScreenPositionC, ScreenPositionA, Thickness, RenderColor);
+		}
+	}
 }

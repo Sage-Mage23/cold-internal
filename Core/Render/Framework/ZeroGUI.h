@@ -1440,13 +1440,15 @@ namespace Menu
 				if (Tab == 0)
 				{
 					ZeroGUI::Checkbox("Enable", &Settings::Combat::Enable);
-					ZeroGUI::SliderFloat("Smoothing", &Settings::Combat::Smooth, 1, 25);
+					ZeroGUI::Checkbox("Triggerbot", &Settings::Combat::Enable);
 					ZeroGUI::Checkbox("Visible Only", &Settings::Misc::VisibleCheck);
 					ZeroGUI::Checkbox("Prediction", &Settings::Combat::Prediction);
+					ZeroGUI::Checkbox("Prediction Dot", &Settings::Combat::PredDot);
 					ZeroGUI::Checkbox("Ignore Knocked", &Settings::Misc::SkipKnocked);
 					ZeroGUI::Checkbox("Ignore Bots", &Settings::Misc::SkipBot);
 					ZeroGUI::Checkbox("Muzzle Line", &Settings::Combat::MuzzleLine);
 					ZeroGUI::Checkbox("Show FOV Circle", &Settings::Combat::DrawFOV);
+					ZeroGUI::SliderFloat("Smoothing", &Settings::Combat::Smooth, 1, 25);
 					ZeroGUI::SliderFloat("FOV Value", &Settings::Combat::AimFOV, 1, 360);
 
 					FVector2D size = FVector2D{ 150, 25 };
@@ -1457,12 +1459,14 @@ namespace Menu
 				else if (Tab == 1)
 				{
 					ZeroGUI::Checkbox("Box", &Settings::Visuals::Box);
+					ZeroGUI::Checkbox("Filled Box", &Settings::Visuals::filled_box);
 					ZeroGUI::Checkbox("Skeleton", &Settings::Visuals::Skeleton);
 					ZeroGUI::Checkbox("Name", &Settings::Visuals::Name);
 					ZeroGUI::Checkbox("Platform", &Settings::Visuals::Platform);
-					ZeroGUI::Checkbox("Rank", &Settings::Visuals::Rank);
 					ZeroGUI::Checkbox("Distance", &Settings::Visuals::Distance);
 					ZeroGUI::Checkbox("Weapon", &Settings::Visuals::Weapon);
+					ZeroGUI::Checkbox("View line", &Settings::Visuals::view_line);
+					ZeroGUI::Checkbox("Arrows", &Settings::Visuals::oof);
 				}
 				else if (Tab == 2)
 				{

@@ -318,8 +318,9 @@ struct FName
 struct FKey
 {
 	FName KeyName;
-	unsigned char Padding_00[0x14];
+	char Details[0x10];
 };
+
 
 class FTextData
 {
