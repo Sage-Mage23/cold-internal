@@ -68,7 +68,7 @@ namespace ZeroGUI
 
 		void Handle()
 		{
-			if ((GetAsyncKeyState)(0x01))
+		if (CALL(GetAsyncKeyState,0x01))
 				mouseDown[0] = true;
 			else
 				mouseDown[0] = false;
@@ -337,13 +337,13 @@ namespace ZeroGUI
 		bool isHovered = MouseInZone(FVector2D{ pos->X, pos->Y }, size);
 
 		//Drop last element
-		if (current_element != -1 && !(GetAsyncKeyState)(0x1))
+		if (current_element != -1 && !CALL(GetAsyncKeyState, 0x1))
 		{
 			current_element = -1;
 		}
 
 		//Drag
-		if (hover_element && (GetAsyncKeyState)(0x1))
+		if (hover_element && CALL(GetAsyncKeyState, 0x1))
 		{
 
 		}
@@ -1026,7 +1026,7 @@ namespace ZeroGUI
 			{
 				for (int code = 0; code < 255; code++)
 				{
-					if ((GetAsyncKeyState)(code))
+					if (CALL(GetAsyncKeyState, code))
 					{
 						*key = code;
 						active_hotkey2 = -1;
@@ -1049,7 +1049,7 @@ namespace ZeroGUI
 
 					// Queue Fix
 					for (int code = 0; code < 255; code++)
-						if ((GetAsyncKeyState)(code)) {}
+						if (CALL(GetAsyncKeyState, code)) {}
 				}
 			}
 			else
@@ -1118,7 +1118,7 @@ namespace ZeroGUI
 			{
 				for (int code = 0; code < 255; code++)
 				{
-					if ((GetAsyncKeyState)(code))
+					if (CALL(GetAsyncKeyState, code))
 					{
 						*key = code;
 						active_hotkey = -1;
@@ -1141,7 +1141,7 @@ namespace ZeroGUI
 
 					//Queue Fix
 					for (int code = 0; code < 255; code++)
-						if ((GetAsyncKeyState)(code)) {}
+						if (CALL(GetAsyncKeyState, code)) {}
 				}
 			}
 			else
@@ -1636,16 +1636,21 @@ namespace Menu
 				else if (Tab == 1)
 				{
 					ZeroGUI::Checkbox("Box", &Settings::Visuals::Box);
+					ZeroGUI::Checkbox("Corner Box", &Settings::Visuals::CornerBox);
 					ZeroGUI::Checkbox("Filled Box", &Settings::Visuals::Filledbox);
 					ZeroGUI::Checkbox("Skeleton", &Settings::Visuals::Skeleton);
 					ZeroGUI::Checkbox("Name", &Settings::Visuals::Name);
 					ZeroGUI::Checkbox("Platform", &Settings::Visuals::Platform);
 					ZeroGUI::Checkbox("Distance", &Settings::Visuals::Distance);
 					ZeroGUI::Checkbox("Weapon", &Settings::Visuals::Weapon);
+					ZeroGUI::Checkbox("Team Id", &Settings::Visuals::TeamID);
 				}
 				else if (Tab == 2)
 				{
+					ZeroGUI::Checkbox("Enable World", &Settings::World::Enable);
+					ZeroGUI::Checkbox("Pickup", &Settings::World::Pickup);
 
+					ZeroGUI::SliderFloat("FOV Value", &Settings::World::MaxDistance, 1, 300);
 				}
 
 				else if (Tab == 3)

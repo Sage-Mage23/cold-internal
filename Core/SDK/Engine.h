@@ -31,9 +31,15 @@ struct TArray
 		return bool(i < this->NumElements);
 	}
 
-	const bool is_valid() const noexcept
+
+	bool IsValidIndex(int i)
 	{
-		return !(this->Data == nullptr);
+		return bool(i < this->NumElements);
+	}
+
+	bool IsValid()
+	{
+		return this->Data && this->NumElements > 0 && this->MaxElements >= this->NumElements;
 	}
 
 

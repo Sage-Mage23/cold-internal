@@ -20,6 +20,7 @@ namespace Settings
 	{
 		bool Enable = true;
 		bool Box = false;
+		bool CornerBox = false;
 		bool Filledbox = false;
 		bool Skeleton = true;
 		bool Name = true;
@@ -28,9 +29,18 @@ namespace Settings
 		bool Rank = false;
 		bool Arrows = false;
 		bool Distance = true;
-		bool ViewLine = false;
+		bool TeamID = false;
 
 		bool TextOutline = true;
+		float MaxDistance = 300;
+		double FontSize = 10.0;
+	}
+
+	namespace World
+	{
+		bool Enable = true;
+		bool Pickup = true;
+
 		float MaxDistance = 300;
 		double FontSize = 10.0;
 	}

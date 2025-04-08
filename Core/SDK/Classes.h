@@ -2953,7 +2953,10 @@ public:
 class AFortPickup : public AActor
 {
 public:
-
+	UFortItemDefinition* PrimaryPickupItemEntry()
+	{
+		return *(UFortItemDefinition**)(this + 0x370 + 0x18);
+	}
 };
 
 class UBaseBuildingStaticMeshComponent : public UMeshComponent

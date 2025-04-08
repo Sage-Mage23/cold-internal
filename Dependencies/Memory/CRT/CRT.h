@@ -7,6 +7,74 @@
 
 namespace NoCRT
 {
+	__forceinline wchar_t* to_string(int n)
+	{
+		int m = n;
+		wchar_t s[100]; //max
+		wchar_t ss[100]; //max
+		int i = 0, j = 0;
+		if (n < 0)
+		{
+			m = 0 - m;
+			j = 1;
+			ss[0] = '-';
+		}
+		while (m > 0)
+		{
+			s[i++] = m % 10 + '0';
+			m /= 10;
+		}
+		s[i] = '\0';
+		i = i - 1;
+		while (i >= 0)
+		{
+			ss[j++] = s[i--];
+		}
+		ss[j] = '\0';
+		return ss;
+	}
+
+	wchar_t* c_wcscpy(wchar_t* dest, const wchar_t* src)
+	{
+		wchar_t* dest_iter = dest;
+		while (*src)
+		{
+			*dest_iter = *src;
+			++dest_iter;
+			++src;
+		}
+		*dest_iter = L'\0';
+		return dest;
+	}
+
+	wchar_t* c_wcscat(wchar_t* dest, const wchar_t* src)
+	{
+		wchar_t* dest_iter = dest;
+		while (*dest_iter)
+		{
+			++dest_iter;
+		}
+
+		while (*src)
+		{
+			*dest_iter = *src;
+			++dest_iter;
+			++src;
+		}
+		*dest_iter = L'\0';
+		return dest;
+	}
+
+	int c_strlen(const char* string)
+	{
+		int cnt = 0;
+		if (string)
+		{
+			for (; *string != 0; ++string) ++cnt;
+		}
+		return cnt;
+	}
+
 	__forceinline int __strlen(const char* str)
 	{
 		const char* s;

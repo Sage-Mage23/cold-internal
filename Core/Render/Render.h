@@ -29,6 +29,8 @@ void RenderingMain(UGameViewportClient* Viewport, UCanvas* Canvas)
 	SDK::Classes::ScreenCenter = FVector2D(SDK::Classes::ScreenSize.X / 2.0, SDK::Classes::ScreenSize.Y / 2.0);
 	SDK::Classes::ScreenTopLeft = FVector2D(SDK::Classes::ScreenSize.X - 40.0, SDK::Classes::ScreenSize.Y - 40.0);
 
+	FVector LocalHeadLocation = FVector();
+
 	UWorld* World = reinterpret_cast<UWorld*>(Viewport->World());
 	if (!World) return OriginalTransition(Viewport, Canvas);
 
@@ -51,7 +53,7 @@ void RenderingMain(UGameViewportClient* Viewport, UCanvas* Canvas)
 	APlayerCameraManager* PlayerCameraManager = PlayerController->PlayerCameraManager();
 	if (!PlayerCameraManager) return OriginalTransition(Viewport, Canvas);
 
-	bool MenuKeyDown = GetAsyncKeyState(VK_INSERT) & 1;
+	bool MenuKeyDown = CALL(GetAsyncKeyState, VK_INSERT) & 1;
 	if (MenuKeyDown) Render::ShowMenu = !Render::ShowMenu;
 	Menu::Render(Canvas);
 
@@ -99,6 +101,7 @@ void RenderingMain(UGameViewportClient* Viewport, UCanvas* Canvas)
 			if (bisDead) continue;
 		}
 
+
 		USkeletalMeshComponent* Mesh = Player->Mesh();
 		if (!Mesh) continue;
 
@@ -117,6 +120,7 @@ void RenderingMain(UGameViewportClient* Viewport, UCanvas* Canvas)
 		}
 
 		bool IsABot = PlayerState->IsABot();
+		auto team_id = Player->GetTeam();
 
 		if (Settings::Misc::IgnoreBots)
 		{
@@ -256,7 +260,7 @@ void RenderingMain(UGameViewportClient* Viewport, UCanvas* Canvas)
 
 			FVector2D BottomMiddle = FVector2D(MostLeft + (ActorWidth / 2.0), MostBottom);
 
-			if (Settings::Visuals::Box)
+			if (Settings::Visuals::CornerBox)
 			{
 				Canvas->K2_DrawLine(FVector2D(MostLeft, MostTop), FVector2D(MostLeft, MostTop + (CornerHeight * BoxSize)), 1.5f, Color);
 				Canvas->K2_DrawLine(FVector2D(MostLeft, MostTop), FVector2D(MostLeft + (CornerWidth + BoxSize), MostTop), 1.5f, Color);
@@ -276,6 +280,21 @@ void RenderingMain(UGameViewportClient* Viewport, UCanvas* Canvas)
 					Canvas->K2_DrawTexture(DefaultTexture, FVector2D(MostLeft, MostTop), FVector2D(ActorWidth, ActorHeight), FVector2D(), FVector2D(1.0, 1.0), FLinearColor(0.0f, 0.0f, 0.0f, 0.20f), EBlendMode::BLEND_Translucent, 0.f, FVector2D());
 				}
 			}
+
+			if (Settings::Visuals::Box)
+			{
+				Canvas->K2_DrawLine(FVector2D(MostLeft, MostTop), FVector2D(MostRight, MostTop), 1.f, Color);
+				Canvas->K2_DrawLine(FVector2D(MostLeft, MostBottom), FVector2D(MostRight, MostBottom), 1.f, Color);
+				Canvas->K2_DrawLine(FVector2D(MostLeft, MostBottom), FVector2D(MostLeft, MostTop), 1.f, Color);
+				Canvas->K2_DrawLine(FVector2D(MostRight, MostTop), FVector2D(MostRight, MostBottom), 1.f, Color);
+
+				if (Settings::Visuals::Filledbox)
+				{
+					UTexture2D* DefaultTexture = Canvas->DefaultTexture();
+					Canvas->K2_DrawTexture(DefaultTexture, FVector2D(MostLeft, MostTop), FVector2D(ActorWidth, ActorHeight), FVector2D(), FVector2D(1.0, 1.0), FLinearColor(0.0f, 0.0f, 0.0f, 0.20f), EBlendMode::BLEND_Translucent, 0.f, FVector2D());
+				}
+			}
+
 
 			if (Settings::Visuals::Skeleton)
 			{
@@ -313,6 +332,21 @@ void RenderingMain(UGameViewportClient* Viewport, UCanvas* Canvas)
 				Canvas->K2_DrawText(Platform, FVector2D(BottomMiddle.X, MostTop - TopTextOffset), Settings::Visuals::FontSize, RenderColor, true, false, Settings::Visuals::TextOutline);
 				TopTextOffset += FontSize + 2;
 			}
+
+			if (Settings::Visuals::TeamID)
+			{
+				const wchar_t* wc1 = (L"T: ");
+				const wchar_t* wc2 = NoCRT::to_string(team_id);
+				wchar_t wc3[255];
+
+				NoCRT::c_wcscpy(wc3, wc1);
+				NoCRT::c_wcscat(wc3, wc2);
+
+				Canvas->K2_DrawText(wc3, FVector2D(BottomMiddle.X, MostTop - TopTextOffset), Settings::Visuals::FontSize, Color, true, false, Settings::Visuals::TextOutline);
+				TopTextOffset += FontSize += 17;
+			}
+
+
 
 			if (Settings::Visuals::Weapon)
 			{
@@ -512,7 +546,7 @@ void RenderingMain(UGameViewportClient* Viewport, UCanvas* Canvas)
 
 														if (PlayerController)
 														{
-															bool AimbotKeyDown = GetAsyncKeyState(Settings::Combat::AimbotKeybind);
+															bool AimbotKeyDown = CALL(GetAsyncKeyState, Settings::Combat::AimbotKeybind);
 															if (AimbotKeyDown)
 															{
 																TargetRotation.Pitch = TargetRotation.Pitch - SDK::Classes::CameraRotation.Pitch;
@@ -545,6 +579,53 @@ void RenderingMain(UGameViewportClient* Viewport, UCanvas* Canvas)
 							}
 						}
 					}
+				}
+			}
+		}
+	}
+
+	if (Settings::World::Enable)
+	{
+		if (AcknowledgedPawn)
+		{
+			USkeletalMeshComponent* Mesh = AcknowledgedPawn->Mesh();
+			if (Mesh)
+			{
+				LocalHeadLocation = Custom::GetSocketLocation(Mesh, FString(L"head"));
+			}
+			if (Settings::World::Pickup)
+			{
+				TArray<UObject*> PickupArray = StaticClasses::GameplayStatics->GetAllActorsOfClass1(World, SDK::Classes::FortPickup);
+				for (int i = 0; i < PickupArray.NumElements; i++)
+				{
+					if (!PickupArray.IsValid()) continue;
+					if (!PickupArray.IsValidIndex(i))
+						continue;
+
+					AFortPickup* Pickup = reinterpret_cast <AFortPickup*>(PickupArray[i]);
+					if (!Pickup)
+						continue;
+
+					if (!StaticClasses::GameplayStatics->ObjectIsA(Pickup, SDK::Classes::FortPickup)) continue;
+
+					FVector2D ScreenLocation = FVector2D();
+					FVector WorldLocation = Pickup->K2_GetActorLocation();
+					if (!Custom::K2_Project(WorldLocation, &ScreenLocation)) continue;
+					if (!Custom::InScreen(ScreenLocation)) continue;
+
+					double Distance = StaticClasses::KismetMathLibrary->Vector_Distance(LocalHeadLocation, WorldLocation) * 0.01;
+					if (Distance >= Settings::World::MaxDistance) continue;
+
+					UFortItemDefinition* PickupItemDefinition = Pickup->PrimaryPickupItemEntry();
+					if (!PickupItemDefinition) continue;
+
+					EFortRarity Tier = PickupItemDefinition->GetRarity();
+					FLinearColor Color = Custom::GetColorByTier(Tier);
+					FString DistplayName = PickupItemDefinition->DisplayName().Get();
+					Canvas->K2_DrawText( DistplayName, ScreenLocation, Settings::World::FontSize, Color, true, false, false);
+
+					FString ConvertedText = StaticClasses::KismetStringLibrary->BuildString_Double(FString(), FString(L"("), int(Distance), FString(L")"));
+					Canvas->K2_DrawText(ConvertedText, FVector2D(ScreenLocation.X, ScreenLocation.Y + Settings::World::FontSize), Settings::World::FontSize, Color, true, false, false); // first font size should be legacy fontsize
 				}
 			}
 		}
